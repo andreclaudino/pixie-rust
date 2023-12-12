@@ -1,11 +1,10 @@
 extern crate pixie_rust;
 
 use std::collections::HashMap;
-use std::env;
 use std::fs::File;
 use std::io::{BufReader, Write, Read};
 
-use pixie_rust::recommender::{Recommender, RecommenderNode};
+use pixie_rust::recommender::Recommender;
 
 extern crate csv;
 
@@ -44,7 +43,7 @@ fn main() {
 fn load_ratings(recommender: &mut Recommender<String>) -> HashMap<String, f32> {
     println!("Loading Data...");
     // Anime dataset from https://www.kaggle.com/CooperUnion/anime-recommendations-database
-    let file = File::open("examples/anime.csv").unwrap();
+    let file = File::open("examples/casino.csv").unwrap();
     let buf_reader = BufReader::new(file);
     let mut csv_reader = csv::Reader::from_reader(buf_reader);
 
@@ -52,7 +51,8 @@ fn load_ratings(recommender: &mut Recommender<String>) -> HashMap<String, f32> {
 
     for entry_res in csv_reader.records() {
         let entry = entry_res.unwrap();
-        let name = entry.get(1).unwrap();
+
+        let customer_code = entry.get(1).unwrap();
         let categories_str = entry.get(2).unwrap();
         let rating = entry.get(5).unwrap().parse::<f32>().unwrap_or(0.0);
         ratings.insert(String::from(name), rating);

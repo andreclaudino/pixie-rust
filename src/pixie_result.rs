@@ -1,0 +1,1 @@
+pub type PixieResult<T> = Result<T, Box<dyn std::error::Error>>;

@@ -9,6 +9,8 @@
 extern crate rand;
 use rand::rngs::OsRng;
 use rand::Rng;
+use serde::Deserialize;
+use serde::Serialize;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -16,14 +18,16 @@ use std::collections::LinkedList;
 use std::fmt;
 use std::hash::Hash;
 use std::iter::FromIterator;
+use std::ops::RangeInclusive;
 
 /// Data structure containing an undirected graph.
-pub struct Graph<T> {
+#[derive(Serialize, Deserialize)]
+pub struct Graph<T> where T: Hash + Eq {
     data: HashMap<T, HashSet<T>>,
     max_degree: usize,
 }
 
-impl<T: Eq + Clone + Hash> Graph<T> {
+impl<T: Eq + Clone + Hash> Graph<T>  where T: Serialize + for<'a> Deserialize<'a>{
     /// Creates an empty graph
     pub fn new() -> Graph<T> {
         Graph {
@@ -165,7 +169,8 @@ impl<T: Eq + Clone + Hash> Graph<T> {
         if total_weight == 0.0 {
             None
         } else {
-            let mut goal: f32 = rng.gen_range(0.0, total_weight);
+            let range = RangeInclusive::new(0.0, total_weight);
+            let mut goal: f32 = rng.gen_range(range);
             let mut iterator = elems.iter();
             let mut choice: Option<&&T> = iterator.next();
             while choice.is_some() {
@@ -214,7 +219,7 @@ impl<T: Eq + Clone + Hash> Graph<T> {
         max_hops: u8,
         weight_fun: impl Fn(&T, &T) -> f32,
     ) -> LinkedList<T> {
-        let mut rng = OsRng::new().expect("Failed to create the RNG");
+        let mut rng = OsRng::default();
         let mut visited: LinkedList<T> = LinkedList::new();
         if self.data.contains_key(starting_node) {
             let mut current_node = starting_node.clone();
@@ -238,7 +243,7 @@ impl<T: Eq + Clone + Hash> Graph<T> {
     }
 }
 
-impl<T: fmt::Debug + Eq + Hash> fmt::Debug for Graph<T> {
+impl<T: fmt::Debug + Eq + Hash> fmt::Debug for Graph<T>  where T: Serialize + for<'a> Deserialize<'a>{
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,

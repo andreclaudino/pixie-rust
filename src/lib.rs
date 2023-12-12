@@ -58,3 +58,4 @@
 extern crate rand;
 
 pub mod recommender;
+pub mod pixie_result;

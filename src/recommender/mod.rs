@@ -3,6 +3,7 @@
 //! The `recommender` module is a collection of utilities to create
 //! a recommender and give recommendations.
 
+pub mod encode_decode;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fmt;
@@ -10,6 +11,10 @@ use std::hash::Hash;
 use std::vec::Vec;
 
 pub mod graph;
+use serde::Deserialize;
+use serde::Serialize;
+use serde::de::DeserializeOwned;
+
 use self::graph::Graph;
 
 /// Nodes to be used for recommendations.
@@ -18,18 +23,20 @@ use self::graph::Graph;
 /// an `Object` (e.g. a product).
 ///
 #[derive(PartialEq, Eq, Clone, Hash, Debug)]
-pub enum RecommenderNode<T> {
+#[derive(Serialize, Deserialize)]
+pub enum RecommenderNode<T> where T: Hash {
     Tag(String),
     Object(T),
 }
 
 /// A recommender that holds objects, tags and their relationship,
 /// and is able to return recommendations.
-pub struct Recommender<T> {
+#[derive(Serialize, Deserialize)]
+pub struct Recommender<T> where T: Hash + Eq {
     graph: Graph<RecommenderNode<T>>,
 }
 
-impl<T: Eq + Clone + Hash> Recommender<T> {
+impl<T: Eq + Clone + Hash + Serialize + DeserializeOwned> Recommender<T> {
     /// Creates a new recommender.
     pub fn new() -> Recommender<T> {
         Recommender {
@@ -275,11 +282,12 @@ impl<T: Eq + Clone + Hash> Recommender<T> {
     }
 }
 
-impl<T: Eq + Hash + fmt::Debug> fmt::Debug for Recommender<T> {
+impl<T: Eq + Hash + fmt::Debug + Serialize + DeserializeOwned> fmt::Debug for Recommender<T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Recommender [{:?}]", self.graph)
     }
 }
+
 
 #[cfg(test)]
 mod test {
